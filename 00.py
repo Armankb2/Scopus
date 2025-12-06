@@ -51,13 +51,13 @@ load_dotenv()
 # ----------------------------
 # Configuration - update if needed
 # ----------------------------
-API_KEY = "836bdfa702b7adb85dca3b95e2c247be"
-BASE_URL = "https://api.elsevier.com/content/search/scopus"
-ABSTRACT_BY_EID = "https://api.elsevier.com/content/abstract/eid/{eid}"
-ABSTRACT_BY_DOI = "https://api.elsevier.com/content/abstract/doi/{doi}"
-AUTHOR_PROFILE_URL = "https://api.elsevier.com/content/author/author_id/{author_id}"
-SCIMAGO_BASE = "https://www.scimagojr.com/"
-CROSSREF_WORKS = "https://api.crossref.org/works"
+API_KEY = ""
+BASE_URL = ""
+ABSTRACT_BY_EID = ""
+ABSTRACT_BY_DOI = "}"
+AUTHOR_PROFILE_URL = ""
+SCIMAGO_BASE = ""
+CROSSREF_WORKS = ""
 SLEEP_BETWEEN_REQUESTS = 0.35
 
 DEFAULT_HEADERS = {
