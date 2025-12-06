@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment & Secrets
+.env
+*.env
+apikey.txt
+secret*.txt
+config.json
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# OS / Editor Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Build
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MacOS metadata
+__MACOSX/
