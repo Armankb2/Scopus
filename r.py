@@ -51,13 +51,13 @@ load_dotenv()
 # ----------------------------
 # Configuration - update if needed
 # ----------------------------
-API_KEY = ""
-BASE_URL = ""
-ABSTRACT_BY_EID = ""
-ABSTRACT_BY_DOI = "}"
-AUTHOR_PROFILE_URL = ""
-SCIMAGO_BASE = ""
-CROSSREF_WORKS = ""
+API_KEY = "836bdfa702b7adb85dca3b95e2c247be"
+BASE_URL = "https://api.elsevier.com/content/search/scopus"
+ABSTRACT_BY_EID = "https://api.elsevier.com/content/abstract/eid/{eid}"
+ABSTRACT_BY_DOI = "https://api.elsevier.com/content/abstract/doi/{doi}"
+AUTHOR_PROFILE_URL = "https://api.elsevier.com/content/author/author_id/{author_id}"
+SCIMAGO_BASE = "https://www.scimagojr.com/"
+CROSSREF_WORKS = "https://api.crossref.org/works"
 SLEEP_BETWEEN_REQUESTS = 0.35
 
 DEFAULT_HEADERS = {
@@ -333,100 +333,79 @@ def get_sjr_and_quartile(journal_name):
     key = journal_name.strip().lower()
     if key in _sjr_cache:
         return _sjr_cache[key]
-    
-    # Advanced headers to bypass some basic bot detection
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://www.scimagojr.com/",
-        "DNT": "1",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1"
-    }
-
     try:
         q = quote_plus(journal_name)
         search_url = f"{SCIMAGO_BASE}journalsearch.php?q={q}"
-        
-        # Use a session for better cookie handling
-        session = requests.Session()
-        r = session.get(search_url, headers=headers, timeout=15)
-        
+        r = safe_get(search_url, tries=2, sleep=0.5)
         if not r or r.status_code != 200:
             _sjr_cache[key] = ("N/A", "N/A")
             return ("N/A", "N/A")
-        
         soup = BeautifulSoup(r.text, "html.parser")
-        
-        # Identify the journal link in search results
-        # Usually: a[href^="journalsearch.php?q="]
         candidate_href = None
-        links = soup.find_all("a", href=re.compile(r"journalsearch\.php\?q=\d+"))
-        
-        for link in links:
-            # Verify if the text matches roughly to avoid false positives
-            link_text = link.get_text().lower()
-            if normalize_title_for_match(journal_name) in normalize_title_for_match(link_text) or \
-               normalize_title_for_match(link_text) in normalize_title_for_match(journal_name):
-                candidate_href = urljoin(SCIMAGO_BASE, link["href"])
+        selectors = [
+            "table.search_results a",
+            "div.search_results a",
+            ".journal_list a",
+            "a[href*='journalrank.php?']",
+            "a[href*='journal.php?']",
+            "a"
+        ]
+        for sel in selectors:
+            el = soup.select_one(sel)
+            if el and el.get("href"):
+                href = el["href"].strip()
+                if href.startswith("javascript:") or href.startswith("#"):
+                    continue
+                candidate_href = urljoin(SCIMAGO_BASE, href)
                 break
-        
-        # Fallback to first link if no exact match found but links exist
-        if not candidate_href and links:
-            candidate_href = urljoin(SCIMAGO_BASE, links[0]["href"])
-
         if not candidate_href:
+            text = soup.get_text(" ", strip=True)
+            m = re.search(r"SJR[:\s]*([0-9]+\.[0-9]+)", text, re.IGNORECASE)
+            q2 = re.search(r"(Q[1-4])", text, re.IGNORECASE)
+            if m or q2:
+                sjr_val = m.group(1) if m else "N/A"
+                quart = q2.group(1).upper() if q2 else "N/A"
+                _sjr_cache[key] = (sjr_val, quart)
+                return (sjr_val, quart)
             _sjr_cache[key] = ("N/A", "N/A")
             return ("N/A", "N/A")
-
-        # Small delay to mimic human behavior
-        time.sleep(1.2)
-        
-        r2 = session.get(candidate_href, headers=headers, timeout=15)
+        time.sleep(0.25)
+        r2 = safe_get(candidate_href, tries=2, sleep=0.5)
         if not r2 or r2.status_code != 200:
             _sjr_cache[key] = ("N/A", "N/A")
             return ("N/A", "N/A")
-            
         page = BeautifulSoup(r2.text, "html.parser")
-        
-        sjr_val = "N/A"
-        quart = "N/A"
-        
-        # 1. Try to find SJR in the summary box (Modern SCImago structure)
-        # Look for the 'SJR' label and the value next to it
-        sjr_summary = page.find("div", class_="cellsummaryvalue")
-        if sjr_summary and "sjr" in sjr_summary.parent.get_text().lower():
-            sjr_val = sjr_summary.get_text(strip=True)
-        
-        # 2. Try to find the latest Quartile
-        # Look for the 'Quartile' label in summary or the specific summary Q block
-        quart_summary = page.find("div", class_="cellsummaryq")
-        if quart_summary:
-            quart = quart_summary.get_text(strip=True).upper()
-            if not quart.startswith("Q"):
-                # Sometimes it just says '1' or '2'
-                m_q = re.search(r"([1-4])", quart)
-                if m_q: quart = f"Q{m_q.group(1)}"
-        
-        # 3. Fallback to Regex on whole page text if summary blocks failed
         page_text = page.get_text(" ", strip=True)
-        if sjr_val == "N/A":
-            m = re.search(r"SJR\s+(\d+\.\d+)", page_text, re.IGNORECASE)
-            if m: sjr_val = m.group(1)
-        
-        if quart == "N/A":
-            # Look for the highest/best quartile mentioned
-            q_matches = re.findall(r"(Q[1-4])", page_text, re.IGNORECASE)
-            if q_matches:
-                # Get the "best" (highest) quartile found
-                quart = sorted(list(set(q.upper() for q in q_matches)))[0]
-
+        sjr_val = None
+        quart = None
+        m = re.search(r"(?:SJR|SCImago Journal Rank)[^\d\-]*?([0-9]+\.[0-9]+)", page_text, re.IGNORECASE)
+        if m:
+            sjr_val = m.group(1)
+        q2 = re.search(r"(Q[1-4])", page_text, re.IGNORECASE)
+        if q2:
+            quart = q2.group(1).upper()
+        if not sjr_val:
+            for tag in page.find_all(string=re.compile(r"SJR", re.IGNORECASE)):
+                parent = getattr(tag, "parent", None)
+                if parent:
+                    txt = parent.get_text(" ", strip=True)
+                    m2 = re.search(r"([0-9]+\.[0-9]+)", txt)
+                    if m2:
+                        sjr_val = m2.group(1)
+                        break
+        if not sjr_val:
+            for sel in ["span.sjr", ".sjr", ".score", ".indicator-value", ".metric", ".sjr-score"]:
+                el = page.select_one(sel)
+                if el:
+                    mm = re.search(r"([0-9]+\.[0-9]+)", el.get_text(" ", strip=True))
+                    if mm:
+                        sjr_val = mm.group(1)
+                        break
+        sjr_val = sjr_val if sjr_val else "N/A"
+        quart = quart if quart else "N/A"
         _sjr_cache[key] = (sjr_val, quart)
         return (sjr_val, quart)
-        
-    except Exception as e:
-        print(f"[!] SCImago Error for {journal_name}: {e}")
+    except Exception:
         _sjr_cache[key] = ("N/A", "N/A")
         return ("N/A", "N/A")
 
@@ -1129,33 +1108,6 @@ def build_unified_rows(author_profile, scholar_filled, scopus_entries, scopus_id
             except Exception:
                 traceback.print_exc()
                 continue
-
-    # Reliable calculation of h-index and i10-index from compiled publication rows if API metrics returned empty/0
-    citation_list = []
-    for r in rows:
-        try:
-            citation_list.append(int(r.get("NumberOfCitations", 0)))
-        except (ValueError, TypeError):
-            pass
-    citation_list.sort(reverse=True)
-    calc_h = 0
-    for i, c in enumerate(citation_list):
-        if c >= i + 1:
-            calc_h = i + 1
-        else:
-            break
-    calc_i10 = sum(1 for c in citation_list if c >= 10)
-
-    if not author_h_index or str(author_h_index).strip() in ("", "0", "N/A"):
-        author_h_index = str(calc_h)
-    if not author_i10_index or str(author_i10_index).strip() in ("", "0", "N/A"):
-        author_i10_index = str(calc_i10)
-
-    for r in rows:
-        if not r.get("h_index") or str(r.get("h_index")).strip() in ("", "0", "N/A"):
-            r["h_index"] = author_h_index
-        if not r.get("i10_index") or str(r.get("i10_index")).strip() in ("", "0", "N/A"):
-            r["i10_index"] = author_i10_index
 
     return rows
 

@@ -1,0 +1,11 @@
+fastapi==0.138.2
+uvicorn==0.49.0
+pydantic==2.13.4
+pandas==3.0.3
+openpyxl==3.1.5
+reportlab==5.0.0
+scholarly==1.7.11
+requests==2.34.2
+beautifulsoup4==4.15.0
+python-dotenv==1.2.2
+sse-starlette==3.4.5

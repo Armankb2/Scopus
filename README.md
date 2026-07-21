@@ -1,171 +1,78 @@
-
- 🧠 Scopus & Google Scholar Data Fetcher
-
-A Python project that automatically extracts faculty publication details from Scopus and Google Scholar, merges the results, and stores them in a local SQLite database (scholar.db).
-
-This tool is designed for institutions, research groups, or individuals who want to quickly generate accurate publication metadata for multiple authors.
-
-
-
- 🚀 Features
-
- ✓ Fetch publication details using:
-
- Scopus API (via requests)
- Google Scholar scraping (via scholarly)
-
- ✓ Automatically extracts:
-
- Title
- Authors
- Journal/Conference Name
- Volume / Issue / Pages
- DOI
- Publisher
- Citation Count
- Scopusindexed status
- Online link
-
- ✓ Saves output to:
-
- SQLite Database (scholar.db)
- CSV if required
- Terminal logs for debugging
-
- ✓ Easy configuration using:
-
- config.py
- .env file for secrets (API keys)
-
-
-
-
-
-
- 🔧 Installation
-
- 1. Clone the repository
-
-bash
-git clone https://github.com/Armankb2/Scopus.git
-cd Scopus
-
-
- 2. Create a virtual environment
-
-bash
-python3 m venv venv
-source venv/bin/activate      macOS / Linux
-venv\Scripts\activate         Windows
-
-
- 3. Install dependencies
-
-bash
-pip install r requirements.txt
-
-
-
-
- 🔑 Setup API Keys (IMPORTANT)
-
-Create a .env file in the project root:
-
-
-SCOPUS_API_KEY=your_scopus_key_here
-GOOGLE_SCHOLAR_EMAIL=optional_email_here
-
-
-Your .gitignore already protects this file — no secrets will be uploaded to GitHub.
-
-
-
- ▶️ Usage
-
- Option 1 — Run the main script normally
-
-bash
-python 00.py
-
-
-This will:
-
- Load faculty names from faculty_list.csv
- Fetch data from Scopus & Google Scholar
- Store results in scholar.db
- Print logs of progress in the terminal
-
- Option 2 — Run a specific module
-
-bash
-python tt.py
-python 102.py
-
-
-
-
- 🗂 Output
-
- The script creates/updates:
-
- scholar.db – SQLite database containing publication entries
- Console logs showing success / warnings / failures
-
-Each entry stored includes:
-
-| Field                  | Description         |
-|  |  |
-| Title                  | Publication title   |
-| Authors                | List of authors     |
-| Journal/Conference     | Source              |
-| Volume / Issue / Pages | Metadata            |
-| DOI                    | Unique identifier   |
-| Publisher              | Name of publisher   |
-| Citations              | Number of citations |
-| Online Link            | Direct URL          |
-| Scopus Indexed         | Yes/No              |
-| Date                   | Publication date    |
-
-
-
- 🧪 Testing & Debugging
-
-Enable verbose mode inside 00.py by uncommenting debug print statements:
-
-python
-print("Fetching data for:", author_name)
-
-
-Run tests with:
-
-bash
-python tt.py
-
-
-
-
- 🛠 Technologies Used
-
- Python 3
- Requests
- BeautifulSoup4
- SQLAlchemy
- Scholarly
- SQLite
-
-
-
- 🤝 Contributing
-
-Pull requests are welcome!
-To contribute:
-
-bash
-git checkout b featurename
-git commit m "Added new feature"
-git push origin featurename
-
-
-
-
-
+# MSRIT Academic Publication Data Aggregator
+
+An enterprise-grade, high-performance web application designed to select faculty members and generate/visualize their complete academic publication portfolio. The portal executes a unified extraction engine wrapping Elsevier Scopus, Google Scholar, and CrossRef APIs, presenting structured datasets and metrics analysis in a premium, glassmorphism-themed interactive dashboard.
+
+---
+
+## Technical Architecture
+
+The application is structured into two decoupled directories for the backend and frontend:
+
+- **Backend (FastAPI)**: Integrates `00.py` dynamically using Python's `importlib`. It streams real-time extraction progress via Server-Sent Events (SSE) and handles spreadsheet generation (Excel/CSV) and PDF report compilation.
+- **Frontend (React 19, Vite, TS, Tailwind CSS)**: Styled with a premium Vercel/Linear dark/light glassmorphic layout. Includes an interactive TanStack table, visual charts (Recharts), and a detail inspection drawer.
+
+---
+
+## Local Development & Setup
+
+### Prerequisites
+- Python 3.11+
+- Node.js 20+
+
+### 1. Backend Setup
+1. Create a virtual environment and install packages:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r backend/requirements.txt
+   ```
+2. Run the FastAPI development server:
+   ```bash
+   python -m uvicorn backend.app:app --port 8000 --reload
+   ```
+   The backend API will be available at `http://localhost:8000`.
+
+### 2. Frontend Setup
+1. Navigate to the `frontend` directory and install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Start the Vite React development server:
+   ```bash
+   npm run dev
+   ```
+   The frontend UI will be available at `http://localhost:5173`.
+
+---
+
+## Production & Containerized Deployment
+
+The workspace contains a multi-stage `Dockerfile` that packages the compiled static React frontend assets directly into the FastAPI backend image, allowing the entire system to run within a single, lightweight Docker container.
+
+### Running with Docker Compose
+1. Ensure your `.env` file contains your Elsevier credentials (optional):
+   ```bash
+   cp .env.example .env
+   ```
+2. Build and spin up the containerized stack:
+   ```bash
+   docker-compose up -d --build
+   ```
+   The application will be accessible at `http://localhost:8000` (serving both the React interface at `/` and the endpoints at `/api`).
+
+### Deploying to Render, Railway, or VPS
+- **Render / Railway**: Link the repository and point the build to the `Dockerfile`. Define port `8000` in your dashboard.
+- **Linux Server / VPS**: Install Docker, clone the repo, copy your `.env` configuration, and run `docker-compose up -d --build`.
+
+---
+
+## REST API Documentation
+
+- `GET /faculty`: Retrieves the default list of CSE faculty from `00.py`
+- `POST /fetch`: Fetches (or serves cached) publication rows and metrics
+- `POST /fetch/start`: Starts a background extraction job and returns a `job_id`
+- `GET /progress/{job_id}`: EventSource (SSE) progress endpoint streaming live extraction steps
+- `GET /download/pdf/{filename}`: Downloads the custom-generated PDF report
+- `GET /download/excel/{filename}`: Downloads the compiled Excel sheet
+- `GET /health`: System checks on Scopus/Scholar API accessibility

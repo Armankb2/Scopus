@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  aggregator-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: msrit-publication-aggregator
+    ports:
+      - "8000:8000"
+    environment:
+      - API_KEY=${API_KEY:-}
+      - INST_TOKEN=${INST_TOKEN:-}
+    volumes:
+      - ./:/app/shared_data
+    restart: always

@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%; /* #F8FAFC - Light Background */
+    --foreground: 222 47% 11%; /* #0F172A - Headings */
+    --card: 0 0% 100%; /* #FFFFFF - Cards */
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 163 100% 38%; /* #00C48C - Primary Brand */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 32% 91%; /* #E2E8F0 - Borders/Dividers */
+    --muted: 210 40% 95%;
+    --muted-foreground: 215 16% 47%; /* #64748B - Body Text */
+    --accent: 46 100% 65%; /* #FFD54A - Accent/Highlights */
+    --accent-foreground: 222 47 11%;
+    --border: 214 32% 91%; /* #E2E8F0 */
+    --input: 214 32% 91%;
+    --ring: 163 100% 38%;
+  }
+
+  .dark {
+    --background: 222 47% 11%; /* #0F172A - Dark Background */
+    --foreground: 210 40% 98%; /* #F8FAFC - Headings */
+    --card: 215 33% 17%; /* #1E293B - Cards */
+    --card-foreground: 210 40% 98%;
+    --popover: 215 33% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 163 100% 38%; /* #00C48C - Primary Brand */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 218 27% 84%; /* #CBD5E1 - Body Text */
+    --muted: 222 47% 8%;
+    --muted-foreground: 218 27% 70%;
+    --accent: 46 100% 65%; /* #FFD54A - Accent */
+    --accent-foreground: 222 47% 11%;
+    --border: 215 25% 27%; /* #334155 - Borders */
+    --input: 215 25% 27%;
+    --ring: 163 100% 38%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-150;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+/* Card container overrides */
+.academic-card {
+  @apply bg-white border border-slate-200/90 rounded-xl shadow-sm transition-all duration-150;
+}
+
+.dark .academic-card {
+  background-color: #1E293B;
+  border-color: #334155;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+}
+
+.dark .academic-card:hover {
+  background-color: #1E293B; /* Matte finish override */
+}
+
+/* Navigation overrides */
+.academic-nav {
+  @apply bg-white border-b border-slate-200 shadow-sm transition-all duration-150;
+}
+
+.dark .academic-nav {
+  background-color: #0F172A;
+  border-color: #334155;
+}
+
+/* Dark mode inputs overrides */
+.dark input, .dark select {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.dark input:focus, .dark select:focus {
+  border-color: #00C48C !important;
+  box-shadow: 0 0 0 1px #00C48C !important;
+}
+
+/* Alternate row styling and header background for tables in dark mode */
+.dark table {
+  background-color: #1E293B;
+}
+
+.dark thead {
+  background-color: #1E293B !important;
+  border-bottom-color: #334155 !important;
+}
+
+.dark tr:nth-child(even) {
+  background-color: #0F172A !important;
+}
+
+.dark tr:nth-child(odd) {
+  background-color: #1E293B !important;
+}
+
+.dark tr:hover {
+  background-color: #273549 !important;
+}
+
+/* Button overrides for brand alignment */
+.bg-primary {
+  background-color: #00C48C !important;
+  color: #FFFFFF !important;
+}
+
+.bg-primary:hover {
+  background-color: #00A876 !important;
+}
+
+.dark .bg-primary {
+  background-color: #00C48C !important;
+  color: #FFFFFF !important;
+}
+
+.dark .bg-primary:hover {
+  background-color: #00A876 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}
