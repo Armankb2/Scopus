@@ -22,10 +22,12 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 # Copy application files
 COPY backend/ ./backend/
 COPY 00.py ./00.py
-COPY SCImago_Journal_Rank_2023.csv ./SCImago_Journal_Rank_2023.csv
 
 # Copy frontend static build assets
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Pre-create output directories
+RUN mkdir -p generated/csv generated/json generated/excel generated/pdf
 
 # Expose server port
 EXPOSE 8000
