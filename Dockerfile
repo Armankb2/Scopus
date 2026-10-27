@@ -43,6 +43,7 @@ EXPOSE 8000
 
 # Set environment
 ENV PORT=8000
+ENV SCHOLARLY_USE_PROXY=1
 
 # Start FastAPI server
 CMD ["python", "-m", "uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]

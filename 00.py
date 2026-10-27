@@ -39,25 +39,37 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+# Load .env if present (must be before scholarly and config)
+load_dotenv()
+
 # scholar: pip install scholarly
 try:
     from scholarly import scholarly
+    # Configure scholarly for server/headless environments (Render, Docker)
+    _use_proxy = os.environ.get("SCHOLARLY_USE_PROXY", "").strip().lower() in ("1", "true", "yes")
+    if _use_proxy:
+        try:
+            from scholarly import ProxyGenerator
+            _pg = ProxyGenerator()
+            _pg.FreeProxies()
+            scholarly.use_proxy(_pg)
+            print("[INFO] scholarly: FreeProxy mode enabled for server environment")
+        except Exception as _pe:
+            print(f"[WARN] scholarly: proxy setup failed ({_pe}), using direct connection")
 except Exception:
     scholarly = None
 
-# Load .env if present
-load_dotenv()
-
 # ----------------------------
-# Configuration - update if needed
+# Configuration
 # ----------------------------
-API_KEY = ""
-BASE_URL = ""
-ABSTRACT_BY_EID = ""
-ABSTRACT_BY_DOI = "}"
-AUTHOR_PROFILE_URL = ""
-SCIMAGO_BASE = ""
-CROSSREF_WORKS = ""
+# API key read from environment variable (set in .env or Render dashboard)
+API_KEY = os.environ.get("ELSEVIER_API_KEY", "836bdfa702b7adb85dca3b95e2c247be")
+BASE_URL = "https://api.elsevier.com/content/search/scopus"
+ABSTRACT_BY_EID = "https://api.elsevier.com/content/abstract/eid/{eid}"
+ABSTRACT_BY_DOI = "https://api.elsevier.com/content/abstract/doi/{doi}"
+AUTHOR_PROFILE_URL = "https://api.elsevier.com/content/author/author_id/{author_id}"
+SCIMAGO_BASE = "https://www.scimagojr.com/"
+CROSSREF_WORKS = "https://api.crossref.org/works"
 SLEEP_BETWEEN_REQUESTS = 0.35
 
 DEFAULT_HEADERS = {
