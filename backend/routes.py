@@ -10,7 +10,8 @@ from sse_starlette.sse import EventSourceResponse
 from backend.models import FetchRequest, FetchResponse
 from backend.services.extractor import (
     get_faculty_list, find_faculty_by_name, extract_faculty,
-    PROGRESS_STORE, update_progress
+    PROGRESS_STORE, update_progress,
+    is_job_active, register_job, run_extraction_job, EXTRACTION_SEMAPHORE
 )
 from backend.services.cache import (
     get_cached_portfolio, get_recent_reports,
@@ -38,12 +39,6 @@ async def get_faculty():
 async def get_recent():
     return get_recent_reports()
 
-def _run_extraction_task(scopus_id: str, scholar_id: str, name: str, job_id: str):
-    try:
-        extract_faculty(scopus_id, scholar_id, author_name=name, job_id=job_id)
-    except Exception as e:
-        update_progress(job_id, "Error", 0, f"Extraction failed: {str(e)}", completed=True, error=str(e))
-
 @router.post("/fetch/start")
 async def start_fetch(req: FetchRequest, background_tasks: BackgroundTasks):
     fac = find_faculty_by_name(req.faculty)
@@ -53,13 +48,22 @@ async def start_fetch(req: FetchRequest, background_tasks: BackgroundTasks):
     # Check cache first if not forced
     if not req.force_refresh and files_exist_for_author(name):
         return {"job_id": job_id, "cached": True}
-            
-    # Initialize progress
-    update_progress(job_id, "Connecting to Google Scholar", 5, f"Starting extraction engine for {name}...")
     
-    # Launch background extraction task
+    # Deduplication: If already active (queued or running), reuse running task!
+    if is_job_active(job_id):
+        return {"job_id": job_id, "cached": False, "status": "already_running"}
+    
+    # Register job in queue
+    registered = register_job(job_id, name)
+    if not registered:
+        return {"job_id": job_id, "cached": False, "status": "already_running"}
+
+    # Initialize progress
+    update_progress(job_id, "Connecting to Google Scholar", 5, f"Queued extraction engine for {name}...")
+    
+    # Launch managed background extraction worker
     background_tasks.add_task(
-        _run_extraction_task,
+        run_extraction_job,
         fac.get("scopus_id", ""),
         fac.get("scholar_id", ""),
         name,
@@ -73,6 +77,10 @@ async def stream_progress(job_id: str, request: Request):
     async def event_generator():
         last_timestamp = 0
         while True:
+            # Prevent lingering loops if client closes tab or reconnects
+            if await request.is_disconnected():
+                break
+
             if job_id in PROGRESS_STORE:
                 event = PROGRESS_STORE[job_id]
                 if event["timestamp"] > last_timestamp:
@@ -84,6 +92,7 @@ async def stream_progress(job_id: str, request: Request):
                     if event.get("completed") or event.get("error"):
                         break
             await asyncio.sleep(0.3)
+            
     # Return SSE with ngrok-skip header so EventSource over ngrok isn't blocked
     return EventSourceResponse(
         event_generator(),
@@ -115,24 +124,26 @@ async def fetch_data(req: FetchRequest):
                 top_coauthors=top_ca
             )
             
-    # Run synchronous extraction if direct post called
-    result = extract_faculty(fac.get("scopus_id", ""), fac.get("scholar_id", ""), author_name=name)
-    rows = result["publications"]
-    metrics = result["metrics"]
-    top_ca = compute_top_coauthors(rows)
-    
-    return FetchResponse(
-        author=result["author"],
-        metrics=metrics,
-        publications=rows,
-        csv_file=f"{safe_name}.csv",
-        json_file=f"{safe_name}.json",
-        excel_file=f"{safe_name}.xlsx",
-        pdf_file=f"{safe_name}.pdf",
-        generated_at=datetime.now(timezone.utc).isoformat(),
-        cached=False,
-        top_coauthors=top_ca
-    )
+    # Run synchronized extraction if direct POST called
+    with EXTRACTION_SEMAPHORE:
+        result = extract_faculty(fac.get("scopus_id", ""), fac.get("scholar_id", ""), author_name=name)
+        rows = result["publications"]
+        metrics = result["metrics"]
+        top_ca = compute_top_coauthors(rows)
+        
+        return FetchResponse(
+            author=result["author"],
+            metrics=metrics,
+            publications=rows,
+            csv_file=f"{safe_name}.csv",
+            json_file=f"{safe_name}.json",
+            excel_file=f"{safe_name}.xlsx",
+            pdf_file=f"{safe_name}.pdf",
+            generated_at=datetime.now(timezone.utc).isoformat(),
+            cached=False,
+            top_coauthors=top_ca
+        )
+
 
 @router.get("/download/csv/{filename}")
 async def download_csv(filename: str):

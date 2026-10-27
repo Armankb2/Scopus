@@ -23,6 +23,35 @@ spec.loader.exec_module(engine)
 # In-memory progress store for SSE
 PROGRESS_STORE: Dict[str, Dict[str, Any]] = {}
 
+import threading
+
+# Concurrency limiter: Only 1 heavy live extraction at a time to prevent CPU/memory starvation on Render
+EXTRACTION_SEMAPHORE = threading.Semaphore(1)
+EXTRACTION_LOCK = threading.Lock()
+
+# Track active extraction jobs: job_id -> {"status": "queued" | "running", "name": str, "started_at": float}
+ACTIVE_JOBS: Dict[str, Dict[str, Any]] = {}
+
+def is_job_active(job_id: str) -> bool:
+    with EXTRACTION_LOCK:
+        return job_id in ACTIVE_JOBS
+
+def register_job(job_id: str, name: str) -> bool:
+    """Register a job if not already active. Returns True if registered, False if already active."""
+    with EXTRACTION_LOCK:
+        if job_id in ACTIVE_JOBS:
+            return False
+        ACTIVE_JOBS[job_id] = {
+            "status": "queued",
+            "name": name,
+            "started_at": time.time()
+        }
+        return True
+
+def unregister_job(job_id: str):
+    with EXTRACTION_LOCK:
+        ACTIVE_JOBS.pop(job_id, None)
+
 def update_progress(job_id: str, stage: str, progress: int, message: str, completed: bool = False, error: Optional[str] = None):
     PROGRESS_STORE[job_id] = {
         "job_id": job_id,
@@ -33,6 +62,56 @@ def update_progress(job_id: str, stage: str, progress: int, message: str, comple
         "error": error,
         "timestamp": time.time()
     }
+
+def run_extraction_job(scopus_id: str, scholar_id: str, name: str, job_id: str):
+    """
+    Worker task:
+    1. Checks if queue wait is needed and updates progress message.
+    2. Acquires semaphore to run exclusively.
+    3. Executes extract_faculty.
+    4. Updates progress store with results or error.
+    5. Cleans up job from ACTIVE_JOBS.
+    """
+    try:
+        # Check if another extraction is currently holding the semaphore
+        with EXTRACTION_LOCK:
+            active_running = [jid for jid, info in ACTIVE_JOBS.items() if info.get("status") == "running"]
+            if active_running:
+                update_progress(
+                    job_id,
+                    "Queued",
+                    3,
+                    f"Waiting in queue: another faculty extraction is currently processing..."
+                )
+        
+        # Wait for available extraction slot (1 at a time)
+        with EXTRACTION_SEMAPHORE:
+            with EXTRACTION_LOCK:
+                if job_id in ACTIVE_JOBS:
+                    ACTIVE_JOBS[job_id]["status"] = "running"
+            
+            update_progress(
+                job_id,
+                "Connecting to Google Scholar",
+                5,
+                f"Acquired worker slot. Starting extraction engine for {name}..."
+            )
+            
+            extract_faculty(scopus_id, scholar_id, author_name=name, job_id=job_id)
+            
+    except Exception as e:
+        print(f"[EXTRACTOR] Extraction job {job_id} error: {e}")
+        update_progress(
+            job_id,
+            "Error",
+            0,
+            f"Extraction failed: {str(e)}",
+            completed=True,
+            error=str(e)
+        )
+    finally:
+        unregister_job(job_id)
+
 
 def get_faculty_list() -> List[Dict[str, str]]:
     """Return the embedded FACULTY list from 00.py"""

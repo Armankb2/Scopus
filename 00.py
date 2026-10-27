@@ -85,6 +85,48 @@ _abstract_cache = {}
 _crossref_cache = {}
 _enrich_cache = {}
 
+SJR_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated", "sjr_cache.json")
+
+def _init_sjr_cache():
+    global _sjr_cache
+    if os.path.exists(SJR_CACHE_FILE):
+        try:
+            with open(SJR_CACHE_FILE, "r", encoding="utf-8") as fp:
+                data = json.load(fp)
+                if isinstance(data, dict):
+                    _sjr_cache.update(data)
+        except Exception:
+            pass
+    # Preload from bundled generated JSONs
+    json_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated", "json")
+    if os.path.isdir(json_dir):
+        for f in os.listdir(json_dir):
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(json_dir, f), "r", encoding="utf-8") as fp:
+                        items = json.load(fp)
+                        if isinstance(items, list):
+                            for row in items:
+                                j = (row.get("JournalName") or row.get("JournalTitle") or "").strip().lower()
+                                sjr = str(row.get("SJR", "N/A"))
+                                q = str(row.get("Quartile", "N/A"))
+                                if j and j not in _sjr_cache and (sjr not in ("N/A", "", "None") or q not in ("N/A", "", "None")):
+                                    _sjr_cache[j] = (sjr, q)
+                except Exception:
+                    pass
+
+def _save_sjr_cache():
+    try:
+        os.makedirs(os.path.dirname(SJR_CACHE_FILE), exist_ok=True)
+        with open(SJR_CACHE_FILE, "w", encoding="utf-8") as fp:
+            json.dump(_sjr_cache, fp)
+    except Exception:
+        pass
+
+# Initialize cache on module load
+_init_sjr_cache()
+
+
 # ----------------------------
 # Faculty list embedded (use your provided table)
 # ----------------------------
@@ -393,7 +435,7 @@ def get_sjr_and_quartile(journal_name):
             return ("N/A", "N/A")
 
         # Small delay to mimic human behavior
-        time.sleep(1.2)
+        time.sleep(0.25)
         
         r2 = session.get(candidate_href, headers=headers, timeout=15)
         if not r2 or r2.status_code != 200:
@@ -435,7 +477,9 @@ def get_sjr_and_quartile(journal_name):
                 quart = sorted(list(set(q.upper() for q in q_matches)))[0]
 
         _sjr_cache[key] = (sjr_val, quart)
+        _save_sjr_cache()
         return (sjr_val, quart)
+
         
     except Exception as e:
         print(f"[!] SCImago Error for {journal_name}: {e}")
