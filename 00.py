@@ -971,11 +971,9 @@ def build_unified_rows(author_profile, scholar_filled, scopus_entries, scopus_id
         print(f"[INFO] Processing {len(pubs)} Google Scholar publications...")
         for idx, p in enumerate(pubs, start=1):
             try:
-                try:
-                    p_filled = scholarly.fill(p)
-                except Exception:
-                    p_filled = p
+                p_filled = p
                 bib = p_filled.get("bib", {}) if isinstance(p_filled, dict) else {}
+
                 title = bib.get("title", "") or p_filled.get("title", "")
                 authors_str = bib.get("author", "") if isinstance(bib, dict) else ""
                 coauthors = authors_str.replace(" and ", ", ") if authors_str else ""

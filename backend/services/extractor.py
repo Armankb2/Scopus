@@ -186,6 +186,40 @@ def extract_faculty(scopus_id: str, scholar_id: str, author_name: str = "Custom 
             except Exception as e:
                 print(f"[EXTRACTOR] Scholar error: {e}")
 
+        # If live Google Scholar fetch returned no publications (or no scholar_id configured),
+        # retain known publications from the cache so non-Scopus publications are NEVER dropped!
+        safe_name = sanitize_filename(author_name)
+        cached_json_path = JSON_DIR / f"{safe_name}.json"
+        if (not scholar_filled or not scholar_filled.get("publications")) and cached_json_path.exists():
+            try:
+                with open(cached_json_path, "r", encoding="utf-8") as fp:
+                    cached_data = json.load(fp)
+                if cached_data and isinstance(cached_data, list):
+                    cached_pubs = []
+                    for r in cached_data:
+                        pub_title = r.get("Journal Paper Title") or r.get("JournalTitle") or ""
+                        if pub_title:
+                            cached_pubs.append({
+                                "bib": {
+                                    "title": pub_title,
+                                    "author": r.get("coauthor") or r.get("author", ""),
+                                    "pub_year": r.get("Year", ""),
+                                    "doi": r.get("DOI", ""),
+                                    "url": r.get("URL", "")
+                                },
+                                "num_citations": r.get("NumberOfCitations", 0),
+                                "pub_url": r.get("URL", "")
+                            })
+                    if cached_pubs:
+                        scholar_filled = {
+                            "name": author_name,
+                            "publications": cached_pubs
+                        }
+                        print(f"[EXTRACTOR] Preserved {len(cached_pubs)} known publications from cache so no papers are lost")
+            except Exception as e:
+                print(f"[EXTRACTOR] Cache fallback read error: {e}")
+
+
         # Step 2: Fetching Scopus Publications
         update_progress(job_id, "Fetching Scopus Publications", 35, f"Connecting to Elsevier Scopus API...")
         scopus_entries = []
