@@ -1,6 +1,6 @@
 import type { FacultyItem, FetchResponse } from '../types';
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api');
 console.log("API_BASE =", API_BASE);
 
 const getFetchOptions = (method: string = 'GET', body?: any) => {
