@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="500" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+<title id="title">Publication Extraction Workflow</title>
+<style>
+  .bg { fill: #0D1117; }
+  .step { fill: #64748B; stroke: #30363D; stroke-width:2; }
+  .cond { fill: #5F9E9A; }
+  .text { font-family: Arial, Helvetica, sans-serif; font-size: 14px; fill: #E6EDF3; }
+  .arrow { stroke:#6B8FBF; stroke-width:2; marker-end:url(#arrowhead); }
+</style>
+<rect class="bg" width="900" height="500"/>
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#6B8FBF" />
+  </marker>
+</defs>
+<!-- Faculty selection -->
+<g transform="translate(50,50)">
+  <rect class="step" width="150" height="80"/>
+  <text x="75" y="45" text-anchor="middle" class="text">Select Faculty</text>
+</g>
+<!-- Extraction request -->
+<g transform="translate(250,50)">
+  <rect class="step" width="180" height="80"/>
+  <text x="90" y="45" text-anchor="middle" class="text">POST /api/fetch/start</text>
+</g>
+<!-- Queue / Job registration -->
+<g transform="translate(470,50)">
+  <rect class="step" width="180" height="80"/>
+  <text x="90" y="30" text-anchor="middle" class="text" font-size="12">Register Job</text>
+  <text x="90" y="55" text-anchor="middle" class="text" font-size="12">(active check, lock)</text>
+</g>
+<!-- Background extraction -->
+<g transform="translate(690,50)">
+  <rect class="step" width="200" height="80"/>
+  <text x="100" y="30" text-anchor="middle" class="text" font-size="12">run_extraction_job</text>
+  <text x="100" y="55" text-anchor="middle" class="text" font-size="12">(semaphore, engine)</text>
+</g>
+<!-- Data source steps (inside job) -->
+<g transform="translate(690,180)">
+  <rect class="cond" width="200" height="120"/>
+  <text x="100" y="30" text-anchor="middle" class="text" font-size="12">Google Scholar</text>
+  <text x="100" y="55" text-anchor="middle" class="text" font-size="12">fetch_scholar_author_pubs</text>
+  <text x="100" y="80" text-anchor="middle" class="text" font-size="12">(optional, cached fallback)</text>
+</g>
+<g transform="translate(690,340)">
+  <rect class="cond" width="200" height="100"/>
+  <text x="100" y="30" text-anchor="middle" class="text" font-size="12">Elsevier Scopus API</text>
+  <text x="100" y="55" text-anchor="middle" class="text" font-size="12">fetch_scopus_author_pubs</text>
+</g>
+<!-- Merge & Build -->
+<g transform="translate(470,260)">
+  <rect class="step" width="180" height="80"/>
+  <text x="90" y="45" text-anchor="middle" class="text" font-size="12">build_unified_rows</text>
+</g>
+<!-- Output files -->
+<g transform="translate(250,260)">
+  <rect class="step" width="180" height="80"/>
+  <text x="90" y="45" text-anchor="middle" class="text" font-size="12">engine.save_outputs</text>
+</g>
+<!-- Final step -->
+<g transform="translate(50,260)">
+  <rect class="step" width="150" height="80"/>
+  <text x="75" y="45" text-anchor="middle" class="text">Update Progress (100%)</text>
+</g>
+<!-- Arrows -->
+<line class="arrow" x1="200" y1="90" x2="250" y2="90"/>
+<line class="arrow" x1="430" y1="90" x2="470" y2="90"/>
+<line class="arrow" x1="670" y1="90" x2="690" y2="90"/>
+<line class="arrow" x1="790" y1="130" x2="790" y2="180"/>
+<line class="arrow" x1="790" y1="300" x2="790" y2="340"/>
+<line class="arrow" x1="790" y1="240" x2="560" y2="300"/>
+<line class="arrow" x1="560" y1="300" x2="340" y2="300"/>
+<line class="arrow" x1="340" y1="300" x2="120" y2="300"/>
+</svg>
