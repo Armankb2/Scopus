@@ -1,75 +1,95 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="900" height="500" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
-<title id="title">Publication Extraction Workflow</title>
-<style>
-  .bg { fill: #0D1117; }
-  .step { fill: #64748B; stroke: #30363D; stroke-width:2; }
-  .cond { fill: #5F9E9A; }
-  .text { font-family: Arial, Helvetica, sans-serif; font-size: 14px; fill: #E6EDF3; }
-  .arrow { stroke:#6B8FBF; stroke-width:2; marker-end:url(#arrowhead); }
-</style>
-<rect class="bg" width="900" height="500"/>
-<defs>
-  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-    <polygon points="0 0, 10 3.5, 0 7" fill="#6B8FBF" />
-  </marker>
-</defs>
-<!-- Faculty selection -->
-<g transform="translate(50,50)">
-  <rect class="step" width="150" height="80"/>
-  <text x="75" y="45" text-anchor="middle" class="text">Select Faculty</text>
-</g>
-<!-- Extraction request -->
-<g transform="translate(250,50)">
-  <rect class="step" width="180" height="80"/>
-  <text x="90" y="45" text-anchor="middle" class="text">POST /api/fetch/start</text>
-</g>
-<!-- Queue / Job registration -->
-<g transform="translate(470,50)">
-  <rect class="step" width="180" height="80"/>
-  <text x="90" y="30" text-anchor="middle" class="text" font-size="12">Register Job</text>
-  <text x="90" y="55" text-anchor="middle" class="text" font-size="12">(active check, lock)</text>
-</g>
-<!-- Background extraction -->
-<g transform="translate(690,50)">
-  <rect class="step" width="200" height="80"/>
-  <text x="100" y="30" text-anchor="middle" class="text" font-size="12">run_extraction_job</text>
-  <text x="100" y="55" text-anchor="middle" class="text" font-size="12">(semaphore, engine)</text>
-</g>
-<!-- Data source steps (inside job) -->
-<g transform="translate(690,180)">
-  <rect class="cond" width="200" height="120"/>
-  <text x="100" y="30" text-anchor="middle" class="text" font-size="12">Google Scholar</text>
-  <text x="100" y="55" text-anchor="middle" class="text" font-size="12">fetch_scholar_author_pubs</text>
-  <text x="100" y="80" text-anchor="middle" class="text" font-size="12">(optional, cached fallback)</text>
-</g>
-<g transform="translate(690,340)">
-  <rect class="cond" width="200" height="100"/>
-  <text x="100" y="30" text-anchor="middle" class="text" font-size="12">Elsevier Scopus API</text>
-  <text x="100" y="55" text-anchor="middle" class="text" font-size="12">fetch_scopus_author_pubs</text>
-</g>
-<!-- Merge & Build -->
-<g transform="translate(470,260)">
-  <rect class="step" width="180" height="80"/>
-  <text x="90" y="45" text-anchor="middle" class="text" font-size="12">build_unified_rows</text>
-</g>
-<!-- Output files -->
-<g transform="translate(250,260)">
-  <rect class="step" width="180" height="80"/>
-  <text x="90" y="45" text-anchor="middle" class="text" font-size="12">engine.save_outputs</text>
-</g>
-<!-- Final step -->
-<g transform="translate(50,260)">
-  <rect class="step" width="150" height="80"/>
-  <text x="75" y="45" text-anchor="middle" class="text">Update Progress (100%)</text>
-</g>
-<!-- Arrows -->
-<line class="arrow" x1="200" y1="90" x2="250" y2="90"/>
-<line class="arrow" x1="430" y1="90" x2="470" y2="90"/>
-<line class="arrow" x1="670" y1="90" x2="690" y2="90"/>
-<line class="arrow" x1="790" y1="130" x2="790" y2="180"/>
-<line class="arrow" x1="790" y1="300" x2="790" y2="340"/>
-<line class="arrow" x1="790" y1="240" x2="560" y2="300"/>
-<line class="arrow" x1="560" y1="300" x2="340" y2="300"/>
-<line class="arrow" x1="340" y1="300" x2="120" y2="300"/>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" role="img" aria-labelledby="title desc">
+  <title id="title">Publication Extraction Workflow</title>
+  <desc id="desc">Faculty selection starts an extraction job. Publication records are retrieved from Google Scholar and Elsevier Scopus, processed, saved, and extraction progress is updated.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#587493"/>
+    </marker>
+  </defs>
+
+  <rect width="1100" height="560" fill="#F4F6F8"/>
+
+  <!-- Header -->
+  <text x="48" y="48" font-family="Arial,sans-serif" font-size="24" font-weight="700" fill="#20334A">Publication Extraction Workflow</text>
+  <text x="48" y="73" font-family="Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.5" fill="#718096">FACULTY SELECTION · DATA RETRIEVAL · UNIFIED PROCESSING</text>
+  <line x1="48" y1="94" x2="1052" y2="94" stroke="#DCE3EA"/>
+
+  <!-- Connectors -->
+  <g fill="none" stroke="#587493" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)">
+    <path d="M218 166 H270"/>
+    <path d="M468 166 H520"/>
+    <path d="M718 166 H752 V157 H790"/>
+    <path d="M718 166 H752 V285 H790"/>
+    <path d="M790 157 H770 V330 H750"/>
+    <path d="M790 285 H770 V330 H750"/>
+    <path d="M570 416 H480"/>
+    <path d="M300 416 H220"/>
+  </g>
+
+  <g font-family="Arial,sans-serif">
+    <!-- Faculty -->
+    <rect x="48" y="124" width="170" height="84" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <rect x="48" y="124" width="5" height="84" rx="2" fill="#587493"/>
+    <text x="133" y="160" text-anchor="middle" font-size="15" font-weight="700" fill="#20334A">Select Faculty</text>
+    <text x="133" y="182" text-anchor="middle" font-size="11" fill="#64748B">Choose academic profile</text>
+
+    <!-- API request -->
+    <rect x="270" y="124" width="198" height="84" rx="9" fill="#EAF0F7" stroke="#AFC0D3" stroke-width="1.5"/>
+    <text x="369" y="158" text-anchor="middle" font-size="14" font-weight="700" fill="#20334A">Extraction Request</text>
+    <text x="369" y="181" text-anchor="middle" font-size="11" fill="#52647A">POST /api/fetch/start</text>
+
+    <!-- Job registration -->
+    <rect x="520" y="124" width="198" height="84" rx="9" fill="#EAF0F7" stroke="#AFC0D3" stroke-width="1.5"/>
+    <text x="619" y="158" text-anchor="middle" font-size="14" font-weight="700" fill="#20334A">Register Job</text>
+    <text x="619" y="181" text-anchor="middle" font-size="11" fill="#52647A">Active check · Lock</text>
+
+    <!-- External sources -->
+    <text x="790" y="111" font-size="11" font-weight="700" letter-spacing="1.2" fill="#718096">PUBLICATION SOURCES</text>
+
+    <rect x="790" y="122" width="260" height="70" rx="9" fill="#E8F2F0" stroke="#9DBDB6" stroke-width="1.5"/>
+    <text x="920" y="151" text-anchor="middle" font-size="14" font-weight="700" fill="#203B3A">Google Scholar</text>
+    <text x="920" y="173" text-anchor="middle" font-size="11" fill="#55716D">Scholar publication retrieval</text>
+
+    <rect x="790" y="250" width="260" height="70" rx="9" fill="#E8F2F0" stroke="#9DBDB6" stroke-width="1.5"/>
+    <text x="920" y="279" text-anchor="middle" font-size="14" font-weight="700" fill="#203B3A">Elsevier Scopus API</text>
+    <text x="920" y="301" text-anchor="middle" font-size="11" fill="#55716D">Scopus publication retrieval</text>
+
+    <!-- Background job -->
+    <rect x="520" y="270" width="198" height="84" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="619" y="304" text-anchor="middle" font-size="14" font-weight="700" fill="#20334A">Background Job</text>
+    <text x="619" y="327" text-anchor="middle" font-size="11" fill="#64748B">Semaphore · Extraction engine</text>
+
+    <!-- Unified processing -->
+    <rect x="570" y="374" width="180" height="84" rx="9" fill="#EAF0F7" stroke="#AFC0D3" stroke-width="1.5"/>
+    <text x="660" y="408" text-anchor="middle" font-size="14" font-weight="700" fill="#20334A">Unified Processing</text>
+    <text x="660" y="431" text-anchor="middle" font-size="11" fill="#52647A">build_unified_rows</text>
+
+    <!-- Save outputs -->
+    <rect x="300" y="374" width="180" height="84" rx="9" fill="#EAF2EC" stroke="#A9C2AE" stroke-width="1.5"/>
+    <text x="390" y="408" text-anchor="middle" font-size="14" font-weight="700" fill="#294638">Save Outputs</text>
+    <text x="390" y="431" text-anchor="middle" font-size="11" fill="#5B7564">engine.save_outputs</text>
+
+    <!-- Progress -->
+    <rect x="48" y="374" width="172" height="84" rx="9" fill="#EAF2EC" stroke="#A9C2AE" stroke-width="1.5"/>
+    <text x="134" y="408" text-anchor="middle" font-size="14" font-weight="700" fill="#294638">Update Progress</text>
+    <text x="134" y="431" text-anchor="middle" font-size="11" fill="#5B7564">Completion status</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="48" y1="490" x2="1052" y2="490" stroke="#DCE3EA"/>
+
+  <g font-family="Arial,sans-serif" font-size="11" fill="#64748B">
+    <circle cx="58" cy="520" r="5" fill="#587493"/>
+    <text x="72" y="524">Application processing</text>
+
+    <circle cx="235" cy="520" r="5" fill="#78A99D"/>
+    <text x="249" y="524">External data sources</text>
+
+    <circle cx="408" cy="520" r="5" fill="#91B29A"/>
+    <text x="422" y="524">Output and completion</text>
+
+    <text x="1052" y="524" text-anchor="end" font-size="10" font-weight="700" letter-spacing="1">SCOPUS · DATA PIPELINE</text>
+  </g>
 </svg>
