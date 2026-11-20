@@ -1,56 +1,85 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="800" height="380" viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
-<title id="title">Overall System Architecture</title>
-<style>
-  .bg { fill: #0D1117; }
-  .box { fill: #64748B; stroke: #30363D; stroke-width:2; }
-  .ext { fill: #6B8FBF; }
-  .db { fill: #5F9E9A; }
-  .txt { font-family: Arial, Helvetica, sans-serif; font-size: 13px; fill: #E6EDF3; }
-  .arrow { stroke:#5F9E9A; stroke-width:2; marker-end:url(#arrowhead); }
-</style>
-<rect class="bg" width="800" height="380"/>
-<defs>
-  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-    <polygon points="0 0, 10 3.5, 0 7" fill="#5F9E9A"/>
-  </marker>
-</defs>
-<!-- Frontend -->
-<g transform="translate(40,150)">
-  <rect class="box" width="150" height="80"/>
-  <text x="75" y="45" text-anchor="middle" class="txt">React Frontend</text>
-</g>
-<!-- Backend -->
-<g transform="translate(300,130)">
-  <rect class="box" width="170" height="120"/>
-  <text x="85" y="30" text-anchor="middle" class="txt">FastAPI Backend</text>
-  <text x="85" y="55" text-anchor="middle" class="txt" font-size="11">API routes &amp; SSE</text>
-  <text x="85" y="75" text-anchor="middle" class="txt" font-size="11">Extraction Engine (00.py)</text>
-</g>
-<!-- Database -->
-<g transform="translate(560,150)">
-  <rect class="db" width="150" height="80"/>
-  <text x="75" y="45" text-anchor="middle" class="txt">SQLite (SQLAlchemy)</text>
-</g>
-<!-- External services -->
-<g transform="translate(300,20)">
-  <rect class="ext" width="150" height="60"/>
-  <text x="75" y="35" text-anchor="middle" class="txt" font-size="11">Google Scholar</text>
-</g>
-<g transform="translate(500,20)">
-  <rect class="ext" width="150" height="60"/>
-  <text x="75" y="35" text-anchor="middle" class="txt" font-size="11">Elsevier Scopus API</text>
-</g>
-<g transform="translate(700,20)">
-  <rect class="ext" width="150" height="60"/>
-  <text x="75" y="35" text-anchor="middle" class="txt" font-size="11">Crossref / SCImago</text>
-</g>
-<!-- Arrows -->
-<line class="arrow" x1="190" y1="190" x2="300" y2="190"/>
-<line class="arrow" x1="470" y1="190" x2="560" y2="190"/>
-<line class="arrow" x1="385" y1="80" x2="385" y2="130"/>
-<line class="arrow" x1="435" y1="80" x2="435" y2="130"/>
-<line class="arrow" x1="385" y1="30" x2="300" y2="130"/>
-<line class="arrow" x1="435" y1="30" x2="300" y2="130"/>
-<line class="arrow" x1="585" y1="30" x2="560" y2="130"/>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="450" viewBox="0 0 1000 450">
+
+  <rect width="1000" height="450" fill="#0D1117"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 Z" fill="#5F9E9A"/>
+    </marker>
+  </defs>
+
+  <!-- React Frontend -->
+  <rect x="45" y="175" width="175" height="90" rx="8"
+        fill="#212B36" stroke="#526274" stroke-width="1.5"/>
+  <text x="132" y="213" text-anchor="middle"
+        fill="#E6EDF3" font-family="Arial" font-size="15">React Frontend</text>
+  <text x="132" y="237" text-anchor="middle"
+        fill="#AAB7C4" font-family="Arial" font-size="11">User Interface</text>
+
+  <!-- FastAPI Backend -->
+  <rect x="365" y="155" width="240" height="130" rx="8"
+        fill="#212B36" stroke="#526274" stroke-width="1.5"/>
+  <text x="485" y="190" text-anchor="middle"
+        fill="#E6EDF3" font-family="Arial" font-size="16">FastAPI Backend</text>
+  <text x="485" y="220" text-anchor="middle"
+        fill="#AAB7C4" font-family="Arial" font-size="12">API Routes &amp; SSE</text>
+  <text x="485" y="245" text-anchor="middle"
+        fill="#AAB7C4" font-family="Arial" font-size="12">Extraction Engine (00.py)</text>
+
+  <!-- SQLite Database -->
+  <rect x="750" y="175" width="205" height="90" rx="8"
+        fill="#183B3A" stroke="#5F9E9A" stroke-width="1.5"/>
+  <text x="852" y="213" text-anchor="middle"
+        fill="#E6EDF3" font-family="Arial" font-size="15">SQLite Database</text>
+  <text x="852" y="237" text-anchor="middle"
+        fill="#B8D0CE" font-family="Arial" font-size="11">SQLAlchemy ORM</text>
+
+  <!-- Google Scholar -->
+  <rect x="180" y="35" width="180" height="65" rx="8"
+        fill="#263B55" stroke="#6B8FBF" stroke-width="1.5"/>
+  <text x="270" y="73" text-anchor="middle"
+        fill="#E6EDF3" font-family="Arial" font-size="13">Google Scholar</text>
+
+  <!-- Scopus -->
+  <rect x="410" y="35" width="180" height="65" rx="8"
+        fill="#263B55" stroke="#6B8FBF" stroke-width="1.5"/>
+  <text x="500" y="73" text-anchor="middle"
+        fill="#E6EDF3" font-family="Arial" font-size="13">Elsevier Scopus API</text>
+
+  <!-- Crossref / SCImago -->
+  <rect x="640" y="35" width="180" height="65" rx="8"
+        fill="#263B55" stroke="#6B8FBF" stroke-width="1.5"/>
+  <text x="730" y="73" text-anchor="middle"
+        fill="#E6EDF3" font-family="Arial" font-size="13">Crossref / SCImago</text>
+
+  <!-- Frontend to Backend -->
+  <path d="M220 220 H365"
+        fill="none" stroke="#5F9E9A" stroke-width="2"
+        marker-end="url(#arrow)"/>
+
+  <!-- Backend to Database -->
+  <path d="M605 220 H750"
+        fill="none" stroke="#5F9E9A" stroke-width="2"
+        marker-end="url(#arrow)"/>
+
+  <!-- External services to Backend -->
+  <path d="M270 100 V130 H420 V155"
+        fill="none" stroke="#5F9E9A" stroke-width="2"
+        marker-end="url(#arrow)"/>
+
+  <path d="M500 100 V155"
+        fill="none" stroke="#5F9E9A" stroke-width="2"
+        marker-end="url(#arrow)"/>
+
+  <path d="M730 100 V130 H550 V155"
+        fill="none" stroke="#5F9E9A" stroke-width="2"
+        marker-end="url(#arrow)"/>
+
+  <!-- Footer -->
+  <text x="500" y="365" text-anchor="middle"
+        fill="#8FA8C5" font-family="Arial" font-size="12">
+    Frontend Layer · Backend Processing · External Publication Sources · Database
+  </text>
+
 </svg>
