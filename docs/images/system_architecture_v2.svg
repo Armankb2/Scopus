@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="380" viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+<title id="title">Overall System Architecture</title>
+<style>
+  .bg { fill: #0D1117; }
+  .box { fill: #64748B; stroke: #30363D; stroke-width:2; }
+  .ext { fill: #6B8FBF; }
+  .db { fill: #5F9E9A; }
+  .txt { font-family: Arial, Helvetica, sans-serif; font-size: 13px; fill: #E6EDF3; }
+  .arrow { stroke:#5F9E9A; stroke-width:2; marker-end:url(#arrowhead); }
+</style>
+<rect class="bg" width="800" height="380"/>
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#5F9E9A"/>
+  </marker>
+</defs>
+<!-- Frontend -->
+<g transform="translate(40,150)">
+  <rect class="box" width="150" height="80"/>
+  <text x="75" y="45" text-anchor="middle" class="txt">React Frontend</text>
+</g>
+<!-- Backend -->
+<g transform="translate(300,130)">
+  <rect class="box" width="170" height="120"/>
+  <text x="85" y="30" text-anchor="middle" class="txt">FastAPI Backend</text>
+  <text x="85" y="55" text-anchor="middle" class="txt" font-size="11">API routes &amp; SSE</text>
+  <text x="85" y="75" text-anchor="middle" class="txt" font-size="11">Extraction Engine (00.py)</text>
+</g>
+<!-- Database -->
+<g transform="translate(560,150)">
+  <rect class="db" width="150" height="80"/>
+  <text x="75" y="45" text-anchor="middle" class="txt">SQLite (SQLAlchemy)</text>
+</g>
+<!-- External services -->
+<g transform="translate(300,20)">
+  <rect class="ext" width="150" height="60"/>
+  <text x="75" y="35" text-anchor="middle" class="txt" font-size="11">Google Scholar</text>
+</g>
+<g transform="translate(500,20)">
+  <rect class="ext" width="150" height="60"/>
+  <text x="75" y="35" text-anchor="middle" class="txt" font-size="11">Elsevier Scopus API</text>
+</g>
+<g transform="translate(700,20)">
+  <rect class="ext" width="150" height="60"/>
+  <text x="75" y="35" text-anchor="middle" class="txt" font-size="11">Crossref / SCImago</text>
+</g>
+<!-- Arrows -->
+<line class="arrow" x1="190" y1="190" x2="300" y2="190"/>
+<line class="arrow" x1="470" y1="190" x2="560" y2="190"/>
+<line class="arrow" x1="385" y1="80" x2="385" y2="130"/>
+<line class="arrow" x1="435" y1="80" x2="435" y2="130"/>
+<line class="arrow" x1="385" y1="30" x2="300" y2="130"/>
+<line class="arrow" x1="435" y1="30" x2="300" y2="130"/>
+<line class="arrow" x1="585" y1="30" x2="560" y2="130"/>
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+<title id="title">Real‑Time Extraction &amp; SSE Workflow</title>
+<style>
+  .bg { fill: #0D1117; }
+  .box { fill: #64748B; stroke: #30363D; stroke-width:2; }
+  .txt { font-family: Arial, Helvetica, sans-serif; font-size: 13px; fill: #E6EDF3; }
+  .arrow { stroke:#5F9E9A; stroke-width:2; marker-end:url(#arrowhead); }
+</style>
+<rect class="bg" width="800" height="300"/>
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#5F9E9A"/>
+  </marker>
+</defs>
+<!-- React UI -->
+<g transform="translate(40,180)">
+  <rect class="box" width="150" height="80"/>
+  <text x="75" y="45" text-anchor="middle" class="txt">React UI<br/>⟶ POST /api/fetch/start</text>
+</g>
+<!-- Backend API (register) -->
+<g transform="translate(250,80)">
+  <rect class="box" width="180" height="80"/>
+  <text x="90" y="45" text-anchor="middle" class="txt">/api/fetch/start<br/>Register job &amp; queue</text>
+</g>
+<!-- Extraction worker (bg task) -->
+<g transform="translate(250,200)">
+  <rect class="box" width="180" height="80"/>
+  <text x="90" y="45" text-anchor="middle" class="txt">run_extraction_job<br/>(background)</text>
+</g>
+<!-- SSE endpoint -->
+<g transform="translate(520,130)">
+  <rect class="box" width="210" height="80"/>
+  <text x="105" y="45" text-anchor="middle" class="txt">/api/progress/{job_id}<br/>EventSourceResponse</text>
+</g>
+<!-- Arrows -->
+<line class="arrow" x1="190" y1="220" x2="250" y2="120"/>
+<line class="arrow" x1="190" y1="220" x2="250" y2="240"/>
+<line class="arrow" x1="430" y1="120" x2="520" y2="170"/>
+<line class="arrow" x1="430" y1="240" x2="520" y2="170"/>
+<line class="arrow" x1="730" y1="170" x2="730" y2="170"/> <!-- placeholder for layout -->
+</svg>
