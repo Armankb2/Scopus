@@ -26,7 +26,11 @@ A self‑contained research‑analytics platform that consolidates an author’s
 ---
 
 ## 3. System Architecture
-![Overall System Architecture](docs/images/system_architecture.svg)
+<p align="center">
+  <img src="./docs/images/system_architecture.svg"
+       alt="Overall System Architecture"
+       width="100%">
+</p>
 
 The diagram shows the three core components (React UI, FastAPI backend, SQLite DB) and their relationships with external services.
 
@@ -49,24 +53,37 @@ The diagram shows the three core components (React UI, FastAPI backend, SQLite D
 
 ---
 
+
 ## 6. Core Application Workflow
+
 ```mermaid
 flowchart TD
-    A[Select faculty in UI] --> B[POST /api/fetch/start]
-    B --> C{Cache hit?}
-    C -- Yes --> D[Return cached file names]
-    C -- No --> E[Register job & enqueue]
-    E --> F[run_extraction_job (background)]
-    F -->|Google Scholar| G[fetch_scholar_author_pubs]
-    F -->|Scopus| H[fetch_scopus_author_pubs]
-    G --> I[Merge & deduplicate]
+    A["Select Faculty in UI"] --> B["POST /api/fetch/start"]
+    B --> C{"Cache Hit?"}
+
+    C -->|Yes| D["Return Cached File Names"]
+    C -->|No| E["Register Job & Enqueue"]
+
+    E --> F["run_extraction_job<br/>(Background Task)"]
+
+    F --> G["Google Scholar<br/>fetch_scholar_author_pubs"]
+    F --> H["Scopus<br/>fetch_scopus_author_pubs"]
+
+    G --> I["Merge & Deduplicate"]
     H --> I
-    I --> J[compute_portfolio_metrics]
-    J --> K[save CSV/JSON to generated/]
-    K --> L[generate Excel & PDF]
-    L --> M[Update PROGRESS_STORE (100%)] --> N[UI receives final event]
-    N --> O[Download report files]
+
+    I --> J["compute_portfolio_metrics"]
+    J --> K["Save CSV / JSON to generated/"]
+    K --> L["Generate Excel & PDF"]
+    L --> M["Update PROGRESS_STORE (100%)"]
+    M --> N["UI Receives Final Event"]
+    N --> O["Download Report Files"]
+
+    D --> O
 ```
+
+
+
 
 ---
 
